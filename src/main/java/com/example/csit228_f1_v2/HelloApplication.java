@@ -65,26 +65,8 @@ public class HelloApplication extends Application {
         grid.add(tmpPassword, 1, 2);
         tmpPassword.setVisible(false);
 
-        ToggleButton btnShow = new ToggleButton("( )");
-//        btnShow.setOnAction(new EventHandler<ActionEvent>() {
-//            @Override
-//            public void handle(ActionEvent actionEvent) {
-//                if (btnShow.isSelected()) {
-//                    tmpPassword.setText(pfPassword.getText());
-//                    tmpPassword.setVisible(true);
-//                } else {
-//                    tmpPassword.setVisible(false);
-//                    pfPassword.setText(tmpPassword.getText());
-//                }
-//            }
-//        });
-        btnShow.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                tmpPassword.setText(pfPassword.getText());
-                tmpPassword.setVisible(true);
-            }
-        });
+
+
 
         EventHandler<MouseEvent> release = new EventHandler<MouseEvent>() {
             @Override
@@ -94,9 +76,6 @@ public class HelloApplication extends Application {
             }
         };
 
-        btnShow.setOnMouseReleased(release);
-        btnShow.setOnMouseExited(release);
-        grid.add(btnShow, 2,2);
 
         Button btnLogin = new Button("Log In");
         btnLogin.setFont(Font.font(40));
@@ -107,7 +86,7 @@ public class HelloApplication extends Application {
             public void handle(ActionEvent actionEvent) {
                 System.out.println("Hello");
                 try {
-                    Parent p = FXMLLoader.load(getClass().getResource("homepage.fxml"));
+                    Parent p = FXMLLoader.load(getClass().getResource("databaseactivity.fxml"));
                     Scene s = new Scene(p);
                     stage.setScene(s);
                     stage.show();
