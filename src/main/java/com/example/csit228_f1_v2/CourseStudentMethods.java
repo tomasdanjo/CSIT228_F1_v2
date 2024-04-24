@@ -13,7 +13,7 @@ public class CourseStudentMethods {
             try{
 
 
-                PreparedStatement statement1 = c.prepareStatement("INSERT INTO tblstudentcourse (course_id,student_id) VALUES (?,?)");
+                PreparedStatement statement1 = c.prepareStatement("INSERT INTO tblstudentcourse (courseid,studid) VALUES (?,?)");
                 statement1.setInt(1,courseid);
                 statement1.setInt(2,studid);
                 int i = statement1.executeUpdate();
@@ -34,7 +34,7 @@ public class CourseStudentMethods {
 
     public static boolean alreadyEnrolled(Connection c, int student_id, int course_id){
         try{
-            PreparedStatement statement1 = c.prepareStatement("Select course_id, student_id from tblstudentcourse WHERE course_id=? AND student_id=?  ");
+            PreparedStatement statement1 = c.prepareStatement("Select courseid, studid from tblstudentcourse WHERE courseid=? AND studid=?  ");
             statement1.setInt(1,course_id);
             statement1.setInt(2,student_id);
             ResultSet i = statement1.executeQuery();
@@ -55,7 +55,7 @@ public class CourseStudentMethods {
 
         try{
 
-            PreparedStatement statement1 = c.prepareStatement("DELETE FROM tblstudentcourse WHERE course_id = ? AND student_id=?");
+            PreparedStatement statement1 = c.prepareStatement("DELETE FROM tblstudentcourse WHERE courseid = ? AND studid=?");
             statement1.setInt(1,courseid);
             statement1.setInt(2,studid);
             int i = statement1.executeUpdate();
@@ -71,6 +71,35 @@ public class CourseStudentMethods {
         }
 
 
+    }
+
+    public static ResultSet getEnrolledCourses(Connection c, int studid){
+        try{
+
+            PreparedStatement statement1 = c.prepareStatement("Select courseid from tblstudentcourse where studid=?");
+            statement1.setInt(1,studid);
+            return statement1.executeQuery();
+
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static ResultSet getNotEnrolledCourses(Connection c, int studid){
+        try{
+
+
+            PreparedStatement statement1 = c.prepareStatement("Select courseid from tblstudentcourse where studid=?");
+            statement1.setInt(1,studid);
+            return statement1.executeQuery();
+
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     //de-enroll student to class

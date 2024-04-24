@@ -61,6 +61,23 @@ public class CourseMethods {
         }
     }
 
+    public static String getCourseCode(Connection c, int course_id){
+        try{
+            PreparedStatement statement1 = c.prepareStatement("Select course_code from tblcourse where courseid=?");
+
+            statement1.setInt(1,course_id);
+            ResultSet set = statement1.executeQuery();
+            while (set.next()){
+                return set.getString("course_code");
+            }
+
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static ResultSet allCourses(Connection c){
         try{
             Statement s = c.createStatement();
@@ -85,6 +102,22 @@ public class CourseMethods {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public static int getCourseId(Connection c, String course_code){
+        try{
+            PreparedStatement statement1 = c.prepareStatement("Select courseid from tblcourse WHERE course_code=? ");
+            statement1.setString(1,course_code);
+            ResultSet i = statement1.executeQuery();
+            while(i.next()){
+                return i.getInt("courseid");
+            }
+
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return -1;
     }
 
 

@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class AsyncActivityController {
     @FXML
@@ -61,6 +62,36 @@ public class AsyncActivityController {
 
     @FXML
     private GridPane courseTablePane;
+
+    public GridPane getCoursesEnrolledBox() {
+        return coursesEnrolledBox;
+    }
+
+    @FXML
+    private GridPane coursesEnrolledBox;
+
+    @FXML
+    private Button btnNextCoursesEnrolled;
+
+    @FXML
+    private Button btnPreviousCoursesEnrolled;
+
+    public ComboBox getAvailableCoursesCMB() {
+        return availableCoursesCMB;
+    }
+
+    @FXML
+    private ComboBox availableCoursesCMB;
+
+    public Button getBtnEnroll() {
+        return btnEnroll;
+    }
+
+    @FXML
+    private Button btnEnroll;
+
+    @FXML
+    private Text courseEnrolledStudName;
 
 
 
@@ -319,6 +350,111 @@ public class AsyncActivityController {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void onNext(){
+        System.out.println("Next clicked");
+        Apr22_23AsyncActivity.index++;
+        Apr22_23AsyncActivity.index%=Apr22_23AsyncActivity.studs.size();
+        availableCoursesCMB.getItems().clear();
+        refreshCourseEnrolled(Apr22_23AsyncActivity.index, coursesEnrolledBox, availableCoursesCMB, btnEnroll);
+
+    }
+
+    public void onPrev(){
+        availableCoursesCMB.getItems().clear();
+        System.out.println("Prev clicked");
+        Apr22_23AsyncActivity.index--;
+        Apr22_23AsyncActivity.index = Apr22_23AsyncActivity.index < 0 ? Apr22_23AsyncActivity.index + Apr22_23AsyncActivity.studs.size(): Apr22_23AsyncActivity.index;
+
+        Apr22_23AsyncActivity.index=Apr22_23AsyncActivity.index%Apr22_23AsyncActivity.studs.size();
+
+        refreshCourseEnrolled(Apr22_23AsyncActivity.index, coursesEnrolledBox, availableCoursesCMB, btnEnroll);
+    }
+
+    public static void refreshCourseEnrolled(int index, GridPane b, ComboBox cmb,Button btnEnroll){
+
+        ArrayList<Student> students = Apr22_23AsyncActivity.studs;
+        Student current = students.get(index);
+
+        Label name = new Label(current.name);
+        b.getChildren().clear();
+        b.add(name,0,0,2,1);
+        b.setHalignment(name,HPos.CENTER);
+
+
+        int row=1;
+        if(!current.courses_enrolled.isEmpty()){
+            for(String s : current.courses_enrolled){
+                Label course = new Label(s);
+                b.add(course,0,row);
+
+                Button unenroll = new Button("Unenroll");
+                b.add(unenroll,1,row);
+                row++;
+                unenroll.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent actionEvent) {
+                        try(Connection c = MySQLConnection.getConnection()){
+                            int studid = current.id;
+                            int courseid = CourseMethods.getCourseId(c,course.getText());
+                            CourseStudentMethods.deEnrollStudent(c,studid,courseid);
+                            Apr22_23AsyncActivity.updateStuds();
+                            refreshCourseEnrolled(index, b, cmb, btnEnroll);
+
+                        }catch (SQLException e){
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+
+            }
+
+            try(Connection c = MySQLConnection.getConnection()){
+                ResultSet courses = CourseMethods.allCourses(c);
+                while(courses.next()){
+                    String course_code = courses.getString("course_code");
+                    if(!current.courses_enrolled.contains(course_code)){
+                        cmb.getItems().add(course_code);
+                    }
+                }
+
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
+
+        }
+
+
+        btnEnroll.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if(cmb.getValue()==null){
+                    System.out.println("Combo box is empty");
+                    return;
+                }else{
+                    String course_code = cmb.getValue().toString();
+                    int studid = current.id;
+                    try(Connection c = MySQLConnection.getConnection()){
+                        int courseid = CourseMethods.getCourseId(c,course_code);
+                        if(courseid==-1) return;
+                        CourseStudentMethods.enrollSudentCourse(c,studid,courseid);
+                        Apr22_23AsyncActivity.updateStuds();
+                        refreshCourseEnrolled(index, b, cmb, btnEnroll);
+
+                    }catch (SQLException e){
+                        e.printStackTrace();
+                    }
+                }
+
+
+            }
+        });
+
+
+
+
     }
 
 
