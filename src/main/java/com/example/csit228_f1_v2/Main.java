@@ -3,7 +3,7 @@ package com.example.csit228_f1_v2;
 import java.util.Scanner;
 
 public class Main {
-    public static void main() {
+    public static void main(String[] args) {
         System.out.println("Enter windspeed: ");
         Scanner sc = new Scanner(System.in);
         int ws = sc.nextInt();
