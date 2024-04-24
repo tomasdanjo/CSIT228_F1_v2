@@ -1,9 +1,6 @@
 package com.example.csit228_f1_v2;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class CourseMethods {
     public static void createCourse(Connection c, String course_code, String course_description, int units){
@@ -62,6 +59,16 @@ public class CourseMethods {
         }catch (SQLException e){
             e.printStackTrace();
         }
+    }
+
+    public static ResultSet allCourses(Connection c){
+        try{
+            Statement s = c.createStatement();
+            return s.executeQuery("Select * from tblcourse");
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
     }
     public static boolean courseExists(Connection c,String course_code){
         try{

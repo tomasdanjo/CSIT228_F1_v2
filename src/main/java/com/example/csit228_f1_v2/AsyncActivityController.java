@@ -43,9 +43,53 @@ public class AsyncActivityController {
     @FXML
     private VBox vbStudentTable;
 
+    @FXML
+    private TextField inputCourseCode;
+
+    @FXML
+    private TextField inputCourseName;
+
+    @FXML
+    private TextField inputUnits;
+
+    @FXML
+    private Button createCourseBtn;
+
+    public GridPane getCourseTablePane() {
+        return courseTablePane;
+    }
+
+    @FXML
+    private GridPane courseTablePane;
+
+
+
 
     public GridPane getStudentTablePane() {
         return studentTablePane;
+    }
+
+    public void onAddCourse(){
+        System.out.println("Add og course");
+
+        try(Connection c = MySQLConnection.getConnection()){
+
+            String course_code = inputCourseCode.getText();
+            String course_name = inputCourseName.getText();
+            String units = inputUnits.getText();
+            if(course_code.isEmpty() || course_name.isEmpty() || units.isEmpty()){
+                System.out.println("Input all fields");
+            }else{
+                CourseMethods.createCourse(c,course_code,course_name,Integer.parseInt(units));
+                inputCourseCode.setText("");
+                inputCourseName.setText("");
+                inputUnits.setText("");
+            }
+            refreshCourseTable(courseTablePane);
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 
     public void onAddStudent(){
@@ -84,6 +128,96 @@ public class AsyncActivityController {
 
             // Add the new node to the same position
             gridPane.add(newNode, columnIndex, rowIndex);
+        }
+    }
+
+    public static void refreshCourseTable (GridPane p) {
+        try (Connection c = MySQLConnection.getConnection()) {
+            ResultSet courses = CourseMethods.allCourses(c);
+            if (courses == null) {
+                System.out.println("Course is null");
+                return;
+            }
+            ArrayList<CourseRow> courseRows = new ArrayList<>();
+
+            // Clear and initialize the GridPane
+            p.getChildren().clear();
+            Label course_code_label = new Label("Course Code");
+            Label course_name_label = new Label("Course Name");
+            Label units_label = new Label("Units");
+            Label actionlabel = new Label("Action");
+
+            p.add(course_code_label, 0, 0);
+            p.add(course_name_label, 1, 0);
+            p.add(units_label, 2, 0);
+            p.add(actionlabel, 4, 0, 2, 1);
+            p.setAlignment(Pos.BASELINE_CENTER);
+            p.setVgap(10);
+
+
+            p.setHalignment(course_code_label, HPos.CENTER);
+            p.setHalignment(course_name_label, HPos.CENTER);
+            p.setHalignment(units_label, HPos.CENTER);
+            p.setHalignment(actionlabel, HPos.CENTER);
+
+            int row = 1;
+            while (courses.next()) {
+                int courseid = courses.getInt("courseid");
+                String course_code = courses.getString("course_code");
+                String course_name = courses.getString("course_description");
+                int units  = courses.getInt("units");
+
+                Button edit = new Button("Edit");
+                Button delete = new Button("Delete");
+
+                CourseRow courseRow = new CourseRow(courseid,course_code,course_name,String.valueOf(units),edit,delete);
+                courseRows.add(courseRow);
+
+                p.add(courseRow.course_code, 0, row);
+                p.add(courseRow.course_name, 1, row);
+                p.add(courseRow.units, 2, row);
+                p.add(courseRow.edit, 3, row);
+                p.add(courseRow.delete, 4, row);
+
+
+                courseRow.delete.setOnAction(event -> {
+                    try (Connection conn = MySQLConnection.getConnection()) {
+                        CourseMethods.deleteCourse(conn,courseRow.course_code.getText());
+                        refreshCourseTable(p);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+                courseRow.edit.setOnAction(event -> {
+                    TextField courseCodeField = new TextField(courseRow.course_code.getText());
+                    TextField courseNameField = new TextField(courseRow.course_name.getText());
+                    TextField unitsField = new TextField(courseRow.units.getText());
+                    Button saveButton = new Button("Save");
+
+                    replaceNode(p, courseRow.course_code, courseCodeField);
+                    replaceNode(p, courseRow.course_name, courseNameField);
+                    replaceNode(p, courseRow.units, unitsField);
+                    replaceNode(p, courseRow.edit, saveButton);
+
+                    saveButton.setOnAction(e -> {
+                        try (Connection conn = MySQLConnection.getConnection()) {
+                            CourseMethods.updateCourse(conn,courseRow.id,
+                                    courseCodeField.getText(),
+                                    courseNameField.getText(),
+                                    Integer.parseInt(unitsField.getText())
+                                    );
+                            refreshCourseTable(p);
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
+                    });
+                });
+
+                row++;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

@@ -25,17 +25,6 @@ public class Apr22_23AsyncActivity extends Application {
         @Override
         public void start(Stage primaryStage)  {
 
-//                try(Connection c = MySQLConnection.getConnection()){
-//                        StudentMethods.createStudent(c,"thomas","danjo","22-1105","thomas@cit.edu");
-//                        StudentMethods.createStudent(c,"thomas","manulat","22-1105-364","thomasd@cit.edu");
-//                        CourseMethods.createCourse(c,"CSIT226","OOP",3);
-//                        CourseMethods.createCourse(c,"CS1234","IDK",2);
-//
-//
-//
-//                }catch (SQLException e){
-//                        e.printStackTrace();
-//                }
 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("Apr22_23AsyncActivity.fxml"));
                 Parent root = null;
@@ -47,10 +36,11 @@ public class Apr22_23AsyncActivity extends Application {
 
                 AsyncActivityController controller = loader.getController(); // Replace YourController with the actual controller class name
 
-                GridPane p = controller.getStudentTablePane();
-                AsyncActivityController.refreshStudentTable(p);
-                // Accessing the child node and its parent GridPane
+                GridPane studentTable = controller.getStudentTablePane();
+                AsyncActivityController.refreshStudentTable(studentTable);
 
+                GridPane courseTable = controller.getCourseTablePane();
+                AsyncActivityController.refreshCourseTable(courseTable);
 
 
                 primaryStage.setScene(new Scene(root));

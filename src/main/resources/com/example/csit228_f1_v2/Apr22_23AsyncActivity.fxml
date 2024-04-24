@@ -61,7 +61,7 @@
       </Text>
       <ScrollPane fx:id="scrollpaneStudent1" layoutX="134.0" layoutY="348.0" prefHeight="206.0" prefWidth="758.0">
          <content>
-            <GridPane fx:id="studentTablePane1" vgap="10.0">
+            <GridPane fx:id="courseTablePane" vgap="10.0">
                <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" maxWidth="150.28570229666573" minWidth="10.0" prefWidth="142.85714394705636" />
                   <ColumnConstraints hgrow="SOMETIMES" maxWidth="196.5714612688337" minWidth="10.0" prefWidth="175.42857033865792" />
@@ -88,10 +88,10 @@
       </ScrollPane>
       <HBox alignment="CENTER" layoutX="228.0" layoutY="567.0" prefHeight="33.0" prefWidth="553.0">
          <children>
-            <TextField id="inputCourseCode" fx:id="input_lname1" promptText="Course Code" />
-            <TextField id="inputCourseName" fx:id="input_idNum1" promptText="Course Name" />
-            <TextField id="inputUnits" fx:id="input_email1" alignment="CENTER" promptText="Units" />
-            <Button id="createCourseBtn" fx:id="btnAddStudent1" mnemonicParsing="false" onAction="#onAddStudent" text="Create Course" />
+            <TextField  fx:id="inputCourseCode" promptText="Course Code" />
+            <TextField  fx:id="inputCourseName" promptText="Course Name" />
+            <TextField  fx:id="inputUnits" alignment="CENTER" promptText="Units" />
+            <Button  fx:id="createCourseBtn" mnemonicParsing="false" onAction="#onAddCourse" text="Create Course" />
          </children>
       </HBox>
    </children>
