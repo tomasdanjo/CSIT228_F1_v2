@@ -34,6 +34,47 @@ public class Apr22_23AsyncActivity extends Application {
         @Override
         public void start(Stage primaryStage)  {
 
+
+                try(Connection c = MySQLConnection.getConnection()){
+                        Statement statement = c.createStatement();
+
+                        statement.addBatch("CREATE TABLE IF NOT EXISTS `tblcourse` (" +
+                                "  `courseid` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+                                "  `course_code` text NOT NULL," +
+                                "  `course_description` text NOT NULL," +
+                                "  `units` int(11) NOT NULL" +
+                                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;");
+                        statement.addBatch("CREATE TABLE IF NOT EXISTS `tblstudent` (" +
+                                "  `studid` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+                                "  `firstname` text NOT NULL," +
+                                "  `lastname` text NOT NULL," +
+                                "  `ID_Number` text NOT NULL," +
+                                "  `institutional_email` text NOT NULL" +
+                                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;");
+
+                        statement.addBatch("CREATE TABLE IF NOT EXISTS `tblstudentcourse` (\n" +
+                                "  `seqid` int(11) NOT NULL AUTO_INCR" +
+                                "EMENT,\n" +
+                                "  `courseid` int(11) NOT NULL,\n" +
+                                "  `studid` int(11) NOT NULL,\n" +
+                                "  PRIMARY KEY (`seqid`),\n" +
+                                "  FOREIGN KEY (`studid`) REFERENCES `tblstudent` (`studid`) ON DELETE CASCADE,\n" +
+                                "  FOREIGN KEY (`courseid`) REFERENCES `tblcourse` (`courseid`) ON DELETE CASCADE\n" +
+                                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;");
+
+                        int[] updateCtr = statement.executeBatch();
+                        for(int count: updateCtr){
+                                System.out.println("Created "+count+" tables");
+                        }
+
+                }catch (SQLException e){
+                        e.printStackTrace();
+                }
+
+
+
+
+
                 studs = new ArrayList<>();
 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("Apr22_23AsyncActivity.fxml"));
@@ -47,14 +88,19 @@ public class Apr22_23AsyncActivity extends Application {
                 AsyncActivityController controller = loader.getController(); // Replace YourController with the actual controller class name
 
                 GridPane studentTable = controller.getStudentTablePane();
-                AsyncActivityController.refreshStudentTable(studentTable);
+
 
                 GridPane courseTable = controller.getCourseTablePane();
-                AsyncActivityController.refreshCourseTable(courseTable);
-
                 GridPane coursesEnrolledBox = controller.getCoursesEnrolledBox();
                 ComboBox coursesNotEnrolledCMB = controller.getAvailableCoursesCMB();
                 Button btnEnroll = controller.getBtnEnroll();
+
+                AsyncActivityController.refreshStudentTable(studentTable,coursesEnrolledBox,coursesNotEnrolledCMB,btnEnroll);
+
+                AsyncActivityController.refreshCourseTable(courseTable,coursesEnrolledBox,coursesNotEnrolledCMB,btnEnroll);
+
+
+
 
 
 
@@ -62,7 +108,9 @@ public class Apr22_23AsyncActivity extends Application {
 
                 index=0;
 
-                AsyncActivityController.refreshCourseEnrolled(index,coursesEnrolledBox,coursesNotEnrolledCMB,btnEnroll);
+                AsyncActivityController.
+
+                        refreshCourseEnrolled(index,coursesEnrolledBox,coursesNotEnrolledCMB,btnEnroll);
 
 
 
@@ -75,6 +123,7 @@ public class Apr22_23AsyncActivity extends Application {
         }
 
         public static void updateStuds(){
+                index=0;
                 studs.clear();
                 try (Connection c = MySQLConnection.getConnection()){
                         ResultSet set = StudentMethods.allStudents(c);

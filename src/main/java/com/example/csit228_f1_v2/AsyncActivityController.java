@@ -116,7 +116,11 @@ public class AsyncActivityController {
                 inputCourseName.setText("");
                 inputUnits.setText("");
             }
-            refreshCourseTable(courseTablePane);
+
+            Apr22_23AsyncActivity.updateStuds();
+            refreshCourseTable (courseTablePane,  coursesEnrolledBox,  availableCoursesCMB,  btnEnroll);
+            refreshCourseEnrolled(Apr22_23AsyncActivity.index, coursesEnrolledBox, availableCoursesCMB, btnEnroll);
+
 
         }catch (SQLException e){
             e.printStackTrace();
@@ -141,7 +145,10 @@ public class AsyncActivityController {
                 input_idNum.setText("");
                 input_email.setText("");
             }
-            refreshStudentTable(studentTablePane);
+
+            Apr22_23AsyncActivity.updateStuds();
+            refreshStudentTable(studentTablePane,coursesEnrolledBox,availableCoursesCMB,btnEnroll);
+            refreshCourseEnrolled(Apr22_23AsyncActivity.index, coursesEnrolledBox, availableCoursesCMB, btnEnroll);
 
         }catch (SQLException e){
                         e.printStackTrace();
@@ -162,7 +169,7 @@ public class AsyncActivityController {
         }
     }
 
-    public static void refreshCourseTable (GridPane p) {
+    public static void refreshCourseTable (GridPane p, GridPane coursesEnrolledBox, ComboBox availableCoursesCMB, Button btnEnroll) {
         try (Connection c = MySQLConnection.getConnection()) {
             ResultSet courses = CourseMethods.allCourses(c);
             if (courses == null) {
@@ -214,7 +221,9 @@ public class AsyncActivityController {
                 courseRow.delete.setOnAction(event -> {
                     try (Connection conn = MySQLConnection.getConnection()) {
                         CourseMethods.deleteCourse(conn,courseRow.course_code.getText());
-                        refreshCourseTable(p);
+                        Apr22_23AsyncActivity.updateStuds();
+                        refreshCourseTable (p, coursesEnrolledBox,  availableCoursesCMB,  btnEnroll);
+                        refreshCourseEnrolled(Apr22_23AsyncActivity.index, coursesEnrolledBox, availableCoursesCMB, btnEnroll);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -238,11 +247,17 @@ public class AsyncActivityController {
                                     courseNameField.getText(),
                                     Integer.parseInt(unitsField.getText())
                                     );
-                            refreshCourseTable(p);
+                            refreshCourseTable ( p,  coursesEnrolledBox,  availableCoursesCMB,  btnEnroll);
+
                         } catch (SQLException ex) {
                             ex.printStackTrace();
                         }
+
+
+                        refreshCourseEnrolled(Apr22_23AsyncActivity.index, coursesEnrolledBox, availableCoursesCMB, btnEnroll);
                     });
+
+
                 });
 
                 row++;
@@ -252,7 +267,7 @@ public class AsyncActivityController {
         }
     }
 
-    public static void refreshStudentTable(GridPane p) {
+    public static void refreshStudentTable(GridPane p, GridPane coursesEnrolledBox, ComboBox availableCoursesCMB, Button btnEnroll) {
         try (Connection c = MySQLConnection.getConnection()) {
             ResultSet students = StudentMethods.allStudents(c);
             if (students == null) {
@@ -309,7 +324,9 @@ public class AsyncActivityController {
                 studentRow.delete.setOnAction(event -> {
                     try (Connection conn = MySQLConnection.getConnection()) {
                         StudentMethods.deleteStudent(conn, studentRow.id);
-                        refreshStudentTable(p);
+                        Apr22_23AsyncActivity.updateStuds();
+                        refreshStudentTable(p,coursesEnrolledBox,availableCoursesCMB,btnEnroll);
+                        refreshCourseEnrolled(Apr22_23AsyncActivity.index, coursesEnrolledBox, availableCoursesCMB, btnEnroll);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -338,7 +355,11 @@ public class AsyncActivityController {
                                     idNumberField.getText(),
                                     emailField.getText()
                             );
-                            refreshStudentTable(p);
+                            Apr22_23AsyncActivity.updateStuds();
+                            refreshStudentTable(p,coursesEnrolledBox,availableCoursesCMB,btnEnroll);
+
+                            refreshCourseEnrolled(Apr22_23AsyncActivity.index, coursesEnrolledBox, availableCoursesCMB, btnEnroll);
+
                         } catch (SQLException ex) {
                             ex.printStackTrace();
                         }
@@ -355,19 +376,19 @@ public class AsyncActivityController {
     public void onNext(){
         System.out.println("Next clicked");
         Apr22_23AsyncActivity.index++;
-        Apr22_23AsyncActivity.index%=Apr22_23AsyncActivity.studs.size();
-        availableCoursesCMB.getItems().clear();
+        if(Apr22_23AsyncActivity.studs.size()!=0) Apr22_23AsyncActivity.index%=Apr22_23AsyncActivity.studs.size();
+
         refreshCourseEnrolled(Apr22_23AsyncActivity.index, coursesEnrolledBox, availableCoursesCMB, btnEnroll);
 
     }
 
     public void onPrev(){
-        availableCoursesCMB.getItems().clear();
+
         System.out.println("Prev clicked");
         Apr22_23AsyncActivity.index--;
         Apr22_23AsyncActivity.index = Apr22_23AsyncActivity.index < 0 ? Apr22_23AsyncActivity.index + Apr22_23AsyncActivity.studs.size(): Apr22_23AsyncActivity.index;
 
-        Apr22_23AsyncActivity.index=Apr22_23AsyncActivity.index%Apr22_23AsyncActivity.studs.size();
+        if(Apr22_23AsyncActivity.studs.size()!=0) Apr22_23AsyncActivity.index=Apr22_23AsyncActivity.index%Apr22_23AsyncActivity.studs.size();
 
         refreshCourseEnrolled(Apr22_23AsyncActivity.index, coursesEnrolledBox, availableCoursesCMB, btnEnroll);
     }
@@ -375,6 +396,9 @@ public class AsyncActivityController {
     public static void refreshCourseEnrolled(int index, GridPane b, ComboBox cmb,Button btnEnroll){
 
         ArrayList<Student> students = Apr22_23AsyncActivity.studs;
+        if(students.isEmpty()){
+            return;
+        }
         Student current = students.get(index);
 
         Label name = new Label(current.name);
@@ -386,6 +410,7 @@ public class AsyncActivityController {
         int row=1;
         if(!current.courses_enrolled.isEmpty()){
             for(String s : current.courses_enrolled){
+                System.out.println(s);
                 Label course = new Label(s);
                 b.add(course,0,row);
 
@@ -411,20 +436,15 @@ public class AsyncActivityController {
 
             }
 
-            try(Connection c = MySQLConnection.getConnection()){
-                ResultSet courses = CourseMethods.allCourses(c);
-                while(courses.next()){
-                    String course_code = courses.getString("course_code");
-                    if(!current.courses_enrolled.contains(course_code)){
-                        cmb.getItems().add(course_code);
-                    }
-                }
 
-            }catch (SQLException e){
-                e.printStackTrace();
-            }
+
+
 
         }
+
+        refreshCmb(cmb,current.courses_enrolled);
+
+
 
 
         btnEnroll.setOnAction(new EventHandler<ActionEvent>() {
@@ -455,6 +475,24 @@ public class AsyncActivityController {
 
 
 
+    }
+
+    public static void refreshCmb(ComboBox cmb, List<String> coursesList){
+
+
+        try(Connection c = MySQLConnection.getConnection()){
+            ResultSet courses = CourseMethods.allCourses(c);
+            cmb.getItems().clear();
+            while(courses.next()){
+                String course_code = courses.getString("course_code");
+                if(!coursesList.contains(course_code)){
+                    cmb.getItems().add(course_code);
+                }
+            }
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 
 
